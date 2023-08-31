@@ -15,6 +15,8 @@ end
 require_relative "lib/discourse_dynamic_groups/engine"
 
 after_initialize do
+  require_relative "lib/discourse_dynamic_groups/rule_engine"
+
   class ::Group
     def dynamic_rule
       self.custom_fields[:dynamic_rule] || nil
