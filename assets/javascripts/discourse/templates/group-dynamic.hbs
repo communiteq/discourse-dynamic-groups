@@ -1,0 +1,11 @@
+<textarea name="ruleexpression" {{on "input" this.updateValue}}>{{this.model.dynamic_rule}}</textarea>
+<DButton
+      @action={{this.run}}
+      @label="explorer.run"
+      @class="btn-primary"
+      @type="submit"
+    />
+
+    <ConditionalLoadingSpinner @condition={{this.loading}} />
+
+
