@@ -17,7 +17,7 @@ module DiscourseDynamicGroups
     end
 
     def tokenize(expression)
-      tokens = expression.scan(/AND|OR|NOT|\(|\)|[a-z\-]+(?:\:[a-z0-9\-]+)?/)
+      tokens = expression.scan(/AND|OR|NOT|\(|\)|[a-z_0_9\-]+(?:\:[a-z_0-9\-]+)?/)
 
       tokens.map do |token|
         case token
@@ -48,9 +48,9 @@ module DiscourseDynamicGroups
         when :NOT
           operators << token
         when :AND, :OR
-          if operators.last && [:AND, :OR, :NOT].include?(operators.last)
-            raise "Consecutive operators detected: ... #{operators.last} #{token} ..."
-          end
+          #if operators.last && [:AND, :OR, :NOT].include?(operators.last)
+          #  raise "Consecutive operators detected: ... #{operators.last} #{token} ..."
+          #end
     
           while operators.any? && (operators.last == :AND || operators.last == :NOT)
             output << operators.pop
@@ -109,6 +109,12 @@ module DiscourseDynamicGroups
       user.groups.pluck(:name).map { |name| name.downcase } +
         user.badges.pluck(:name).map { |name| "badge:#{slugify(name)}" } +
         user.badges.pluck(:id).map { |id| "badge:#{id}" }
+    end
+
+    def get_deps_for_rule(rule)
+      tokens = tokenize(rule)
+      postfix = shunting_yard(tokens) # include it because it does syntax checking
+      postfix.reject { |el| el.is_a? Symbol }.uniq
     end
 
     def evaluate_rule(user, rule)
