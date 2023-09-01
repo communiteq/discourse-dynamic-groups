@@ -61,12 +61,10 @@ after_initialize do
       membership = engine.evaluate_rule(user, dynamic_rule)
       is_member = GroupUser.where(user_id: user.id).where(group_id: self.id).count > 0
       if is_member && !membership
-        puts "remove user"
         self.remove(user)
         false
       end
       if !is_member && membership
-        puts "add user"
         self.add(user)
         true
       end
@@ -80,7 +78,6 @@ after_initialize do
   DiscourseEvent.on(:user_badge_granted) do |badge_id, user_id|
     group_ids = Badge.find(badge_id).get_depending_group_ids
     group_ids.each do |group_id|
-      # evaluate user membership for these dependant groups
       Group.find(group_id).evaluate_membership(User.find(user_id))
     end
   end
@@ -89,7 +86,6 @@ after_initialize do
     user_badge = params[:user_badge]
     group_ids = Badge.find(user_badge.badge_id).get_depending_group_ids
     group_ids.each do |group_id|
-      # evaluate user membership for these dependant groups
       Group.find(group_id).evaluate_membership(User.find(user_badge.user_id))
     end
   end
@@ -97,7 +93,6 @@ after_initialize do
   DiscourseEvent.on(:user_added_to_group) do |user, group|
     group_ids = group.get_depending_group_ids
     group_ids.each do |group_id|
-      # evaluate user membership for these dependant groups
       Group.find(group_id).evaluate_membership(User.find(user.id))
     end
   end
@@ -105,7 +100,6 @@ after_initialize do
   DiscourseEvent.on(:user_removed_from_group) do |user, group|
     group_ids = group.get_depending_group_ids
     group_ids.each do |group_id|
-      # evaluate user membership for these dependant groups
       Group.find(group_id).evaluate_membership(User.find(user.id))
     end
   end
