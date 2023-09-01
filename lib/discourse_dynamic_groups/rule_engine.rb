@@ -1,6 +1,27 @@
 # frozen_string_literal: true
 
 module DiscourseDynamicGroups
+
+  class Node
+    attr_accessor :left, :right, :value
+
+    def initialize(value, operator = nil)
+      @value = value
+      @operator = operator
+      @left = nil
+      @right = nil
+    end
+
+    def leaf?
+      !@operator
+    end
+
+    def operator
+      @operator
+    end
+  end
+
+
   class RuleEngine
     def initialize
       @group_names = Group.pluck(:name).map { |name| name.downcase } +
@@ -17,7 +38,7 @@ module DiscourseDynamicGroups
     end
 
     def tokenize(expression)
-      tokens = expression.scan(/AND|OR|NOT|\(|\)|[a-z_0_9\-]+(?:\:[a-z_0-9\-]+)?/)
+      tokens = expression.scan(/AND|OR|NOT|\(|\)|[a-z_0-9\-]+(?:\:[a-z_0-9\-]+)?/)
 
       tokens.map do |token|
         case token
@@ -83,7 +104,7 @@ module DiscourseDynamicGroups
 
     def evaluate_postfix(postfix, true_vars)
       stack = []
-    
+
       postfix.each do |token|
         case token
         when String
@@ -101,8 +122,33 @@ module DiscourseDynamicGroups
           stack << (left || right)
         end
       end
-    
+
       stack.first
+    end
+
+    def build_tree(tokens)
+      stack = []
+
+      tokens.each do |token|
+        case token
+        when :AND, :OR
+          right = stack.pop
+          left = stack.pop
+          node = Node.new(nil, token)
+          node.left = left
+          node.right = right
+          stack.push(node)
+        when :NOT
+          operand = stack.pop
+          node = Node.new(nil, token)
+          node.left = operand
+          stack.push(node)
+        else  # this means the token is a group
+          stack.push(Node.new(token))
+        end
+      end
+
+      stack[0]  # The root of our expression tree
     end
 
     def get_truth_for_user(user)
@@ -122,6 +168,39 @@ module DiscourseDynamicGroups
       tokens = tokenize(rule)
       postfix = shunting_yard(tokens)
       result = evaluate_postfix(postfix, true_vars)
+    end
+
+    def group_set(group_name)
+      Group.find_by(name: group_name).users.pluck(:id)
+    end
+
+    def universal_set
+      User.pluck(:id)
+    end
+
+    def evaluate_tree(node)
+      return unless node
+
+      return group_set(node.value) if node.leaf?
+
+      left_result = evaluate_tree(node.left)
+      right_result = evaluate_tree(node.right) if node.right
+
+      case node.operator
+      when :AND
+        left_result & right_result
+      when :OR
+        left_result | right_result
+      when :NOT
+        universal_set - left_result
+      end
+    end
+
+    def magical_tree(rule)
+      tokens = tokenize(rule)
+      postfix = shunting_yard(tokens)
+      tree = build_tree(postfix)
+      evaluate_tree(tree)
     end
   end
 end

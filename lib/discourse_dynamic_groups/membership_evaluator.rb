@@ -15,10 +15,17 @@ module DiscourseDynamicGroups
     end
 
     def evaluate_group(group)
-      # used when a new rule is added
-      # get all users that belong to one of the groups mentioned in the rule
-      # loop through all those users
-      # call determine_group_membership
+      engine = ::DiscourseDynamicGroups::RuleEngine.new
+      user_ids = engine.magical_tree(group.dynamic_rule)
+      current_users = group.users.pluck(:id)
+      to_be_removed = current_users - user_ids
+      to_be_added = user_ids - current_users
+      User.where(id: to_be_removed).each do |user|
+        group.remove(user)
+      end
+      User.where(id: to_be_added).each do |user}
+        group.add(user)
+      end
     end
   end
 end
