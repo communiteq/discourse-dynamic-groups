@@ -23,34 +23,21 @@ module DiscourseDynamicGroups
 
 
   class RuleEngine
-    def initialize
-      @group_names = Group.pluck(:name).map { |name| name.downcase } +
-        Badge.pluck(:name).map { |name| "badge:#{slugify(name)}" } +
-        Badge.pluck(:id).map { |id| "badge:#{id}" }
-
-    end
-
-    def slugify(name)
-      slug = name.downcase
-        .gsub(/[^a-z0-9\s-]/, '')  # Remove non-alphanumeric characters except spaces and hyphens
-        .gsub(/\s+/, '-')         # Replace spaces with hyphens
-        .gsub(/-+/, '-') 
-    end
-
     def tokenize(expression)
       tokens = expression.scan(/AND|OR|NOT|\(|\)|[a-z_0-9\-]+(?:\:[a-z_0-9\-]+)?/)
 
       tokens.map do |token|
         case token
-        when 'AND', 'OR', 'NOT'
-          token.to_sym
+        when 'AND', 'OR', 'NOT', 'and', 'or', 'not'
+          token.upcase.to_sym
         when '('
           "LBRACKET".to_sym
         when ')'
           "RBRACKET".to_sym
         else
-          if @group_names.include? token.downcase
-            token
+          normalized_token = Utils.get_normalized_name(token)
+          if normalized_token
+            normalized_token
           else
             raise "Unknown keyword, group or badge: '#{token}'"
           end
@@ -153,7 +140,7 @@ module DiscourseDynamicGroups
 
     def get_truth_for_user(user)
       user.groups.pluck(:name).map { |name| name.downcase } +
-        user.badges.pluck(:name).map { |name| "badge:#{slugify(name)}" } +
+        user.badges.map { |badge| "badge:#{badge.slug}" } +
         user.badges.pluck(:id).map { |id| "badge:#{id}" }
     end
 
@@ -170,8 +157,13 @@ module DiscourseDynamicGroups
       result = evaluate_postfix(postfix, true_vars)
     end
 
-    def group_set(group_name)
-      Group.find_by(name: group_name).users.pluck(:id)
+    def group_or_badge_set(group_or_badge)
+      if group_or_badge.start_with?("badge:")
+        badge_id = group_or_badge.split(":").last.to_i
+        UserBadge.where(badge_id: badge_id).pluck(:user_id)
+      else
+        Group.find_by(name: group_or_badge).users.pluck(:id)
+      end
     end
 
     def universal_set
@@ -181,7 +173,7 @@ module DiscourseDynamicGroups
     def evaluate_tree(node)
       return unless node
 
-      return group_set(node.value) if node.leaf?
+      return group_or_badge_set(node.value) if node.leaf?
 
       left_result = evaluate_tree(node.left)
       right_result = evaluate_tree(node.right) if node.right
