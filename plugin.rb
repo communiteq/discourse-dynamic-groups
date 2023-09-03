@@ -40,6 +40,9 @@ after_initialize do
     end
 
     def set_dependant_info(rule)
+      dg = DiscourseDynamicGroups::CycleDetector.new
+      raise "Circular dependency detected" if dg.detect_graph_loop(self, rule)
+
       engine = ::DiscourseDynamicGroups::RuleEngine.new
       deps = engine.get_deps_for_rule(rule).map { |el| "depends_on_#{el}" }
       existing_deps = GroupCustomField.where(group_id: self.id).where("name like 'depends_on_%'").pluck(:name)
