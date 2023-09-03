@@ -18,6 +18,7 @@ after_initialize do
   require_relative "lib/discourse_dynamic_groups/rule_engine"
   require_relative "lib/discourse_dynamic_groups/membership_evaluator"
   require_relative "lib/discourse_dynamic_groups/utils"
+  require_relative "lib/discourse_dynamic_groups/cycle_detector"
 
   class ::Badge
     def get_depending_group_ids
