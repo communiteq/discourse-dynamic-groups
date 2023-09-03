@@ -12,9 +12,13 @@ module ::DiscourseDynamicGroups
 
     def update
       group = Group.find_by(name: params[:group_name])
-      group.set_dynamic_rule(params[:dynamic_rule])
 
-      render json: { success: true, errors: [] }
+      begin
+        group.set_dynamic_rule(params[:dynamic_rule])
+        render json: { success: true, errors: [] }
+      rescue => e
+        render_json_error(e.message)
+      end
     end
   end
 end
