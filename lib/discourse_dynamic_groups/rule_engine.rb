@@ -24,7 +24,7 @@ module DiscourseDynamicGroups
 
   class RuleEngine
     def tokenize(expression)
-      tokens = expression.scan(/AND|OR|NOT|\(|\)|[a-z_0-9\-]+(?:\:[a-z_0-9\-]+)?/)
+      tokens = expression.downcase.scan(/AND|OR|NOT|\(|\)|[a-z_0-9\-]+(?:\:[a-z_0-9\-]+)?/)
 
       tokens.map do |token|
         case token
