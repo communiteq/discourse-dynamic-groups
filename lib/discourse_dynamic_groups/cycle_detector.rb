@@ -22,6 +22,8 @@ module DiscourseDynamicGroups
       @adj_list[node] << dep
     end
 
+    # detects if there is a circular dependency
+    # also performs syntax checking via get_deps_for_rule
     def detect_graph_loop(group, rule)
       Group.all.each do |g|
         dependencies = GroupCustomField.where(group_id: g.id).where("name like 'depends_on_%'").pluck(:name)
