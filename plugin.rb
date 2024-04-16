@@ -8,6 +8,8 @@
 
 enabled_site_setting :dynamic_groups_enabled
 
+register_asset "stylesheets/dynamic-groups.scss"
+
 module ::DiscourseDynamicGroups
   PLUGIN_NAME = "discourse-dynamic-groups"
 end
@@ -87,7 +89,7 @@ after_initialize do
       Group.find(group_id).evaluate_membership(User.find(user_id))
     end
   end
-  
+
   DiscourseEvent.on(:user_badge_revoked) do |params|
     user_badge = params[:user_badge]
     group_ids = Badge.find(user_badge.badge_id).get_depending_group_ids

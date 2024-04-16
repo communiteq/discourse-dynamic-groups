@@ -1,11 +1,17 @@
-<textarea name="ruleexpression" {{on "input" this.updateValue}}>{{this.model.dynamic_rule}}</textarea>
-<DButton
-      @action={{this.run}}
-      @label="explorer.run"
-      @class="btn-primary"
-      @type="submit"
-    />
-
-    <ConditionalLoadingSpinner @condition={{this.loading}} />
-
-
+<section class="groups-dynamic-groups">
+  <div class="explanation">{{html-safe (i18n "dynamic_groups.explanation")}}</div>
+  <textarea id="ruleexpression" rows="5" cols="60" name="ruleexpression" {{on "input" this.updateValue}}>{{this.model.dynamic_rule}}</textarea>
+  <DButton
+        @action={{this.run}}
+        @label="dynamic_groups.apply_button"
+        @class="btn-primary"
+        @type="submit"
+        @disabled={{this.disabled}}
+      />
+  <ConditionalLoadingSpinner @condition={{this.loading}} />
+  {{#if this.message}}
+    <div class="{{if (eq this.messageType 'success') 'success-bar' 'error-bar'}}">
+      {{this.message}}
+    </div>
+  {{/if}}
+</section>
