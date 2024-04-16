@@ -7,11 +7,15 @@
         @class="btn-primary"
         @type="submit"
         @disabled={{this.disabled}}
+        @isLoading={{this.loading}}
       />
-  <ConditionalLoadingSpinner @condition={{this.loading}} />
+  <ConditionalLoadingSpinner @condition={{this.spinning}} />
   {{#if this.message}}
     <div class="{{if (eq this.messageType 'success') 'success-bar' 'error-bar'}}">
       {{this.message}}
     </div>
+  {{/if}}
+  {{#if this.deploying}}
+    <div>Making changes to group membership: {{ this.model.dynamic_progress}}%</div>
   {{/if}}
 </section>

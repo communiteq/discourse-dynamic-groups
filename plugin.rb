@@ -21,6 +21,7 @@ after_initialize do
   require_relative "lib/discourse_dynamic_groups/membership_evaluator"
   require_relative "lib/discourse_dynamic_groups/utils"
   require_relative "lib/discourse_dynamic_groups/cycle_detector"
+  require_relative "jobs/regular/dynamic_groups/update_dynamic_group"
 
   class ::Badge
     def get_depending_group_ids
@@ -33,12 +34,18 @@ after_initialize do
       self.custom_fields[:dynamic_rule] || nil
     end
 
+    def dynamic_progress
+      self.custom_fields[:dynamic_progress] || nil
+    end
+
     def set_dynamic_rule(rule)
       self.set_dependant_info(rule)
       self.custom_fields[:dynamic_rule] = rule
+      self.custom_fields[:dynamic_progress]  = 1
       self.save_custom_fields
-      # re-evaluate the rule for all users
-      # hmm maybe only the users with depending groups if there is no NOT
+
+      job_name = "DynamicGroups::UpdateDynamicGroup"
+      ::Jobs.enqueue(job_name.to_sym, {group_id: self.id})
     end
 
     def set_dependant_info(rule)
@@ -81,6 +88,10 @@ after_initialize do
 
   add_to_serializer(:group_show, :dynamic_rule, include_condition: -> { object.dynamic_rule.present? && scope.is_admin? }) do
     object.dynamic_rule
+  end
+
+  add_to_serializer(:group_show, :dynamic_progress, include_condition: -> { object.dynamic_progress.present? && scope.is_admin? }) do
+    object.dynamic_progress.to_i
   end
 
   DiscourseEvent.on(:user_badge_granted) do |badge_id, user_id|

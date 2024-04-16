@@ -10,10 +10,8 @@ module DiscourseDynamicGroups
     def progress(group, chunk_size, i, total)
       if i % chunk_size == 0
         progress = (i*100/total).to_i
-        if progress == 100
-          group.custom_fields.delete(:membership_progress)
-        else
-          group.custom_fields[:membership_progress] = (i*100/total).to_i
+        if progress != 100
+          group.custom_fields[:dynamic_progress] = (i*100/total).to_i
         end
         group.save_custom_fields
       end
@@ -41,9 +39,9 @@ module DiscourseDynamicGroups
           i+=1
           group.add(user)
         end
-
-        progress(group,t,t,t) # 100%
       end
+      group.custom_fields.delete(:dynamic_progress)
+      group.save_custom_fields
       t
     end
   end
