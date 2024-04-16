@@ -27,23 +27,24 @@ module DiscourseDynamicGroups
       to_be_added = user_ids - current_users
 
       t = to_be_removed.count + to_be_added.count
-      c = progress_chunk_size(t)
-      i = 0
+      if t > 0
+        c = progress_chunk_size(t)
+        i = 0
 
-      User.where(id: to_be_removed).each do |user|
-        progress(group,c,i,t)
-        i+=1
-        group.remove(user)
-      end
-      User.where(id: to_be_added).each do |user|
-        progress(group,c,i,t)
-        i+=1
-        group.add(user)
-      end
+        User.where(id: to_be_removed).each do |user|
+          progress(group,c,i,t)
+          i+=1
+          group.remove(user)
+        end
+        User.where(id: to_be_added).each do |user|
+          progress(group,c,i,t)
+          i+=1
+          group.add(user)
+        end
 
-      progress(group,t,t,t) # 100%
+        progress(group,t,t,t) # 100%
+      end
       t
     end
   end
 end
-    
