@@ -48,7 +48,7 @@ module DiscourseDynamicGroups
     def shunting_yard(tokens)
       output = []
       operators = []
-    
+
       tokens.each do |token|
         case token
         when String
@@ -59,7 +59,7 @@ module DiscourseDynamicGroups
           #if operators.last && [:AND, :OR, :NOT].include?(operators.last)
           #  raise "Consecutive operators detected: ... #{operators.last} #{token} ..."
           #end
-    
+
           while operators.any? && (operators.last == :AND || operators.last == :NOT)
             output << operators.pop
           end
@@ -70,22 +70,22 @@ module DiscourseDynamicGroups
           if operators.empty?
             raise "Mismatched parentheses detected: no matching open parenthesis."
           end
-    
+
           while operators.last != :LBRACKET
             output << operators.pop
           end
           operators.pop
         end
       end
-    
+
       if operators.include?(:LBRACKET)
         raise "Mismatched parentheses detected: no matching close parenthesis."
       end
-    
+
       while operators.any?
         output << operators.pop
       end
-    
+
       output
     end
 
@@ -120,7 +120,9 @@ module DiscourseDynamicGroups
         case token
         when :AND, :OR
           right = stack.pop
+          raise "Syntax error" unless right
           left = stack.pop
+          raise "Syntax error" unless left
           node = Node.new(nil, token)
           node.left = left
           node.right = right
@@ -146,7 +148,8 @@ module DiscourseDynamicGroups
 
     def get_deps_for_rule(rule)
       tokens = tokenize(rule)
-      postfix = shunting_yard(tokens) # include it because it does syntax checking
+      postfix = shunting_yard(tokens)
+      tree = build_tree(postfix) # include it because it does syntax checking
       postfix.reject { |el| el.is_a? Symbol }.uniq
     end
 
