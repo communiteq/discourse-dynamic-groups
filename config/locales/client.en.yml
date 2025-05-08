@@ -4,3 +4,5 @@ en:
       explanation: "Use group names, <code>badge:slug</code>, <code>badge:id</code> and the operators <code>AND</code>, <code>OR</code> and <code>NOT</code>. Use brackets to specify evaluation order."
       button_title: "Dynamic Groups"
       apply_button: "Apply changes"
+      applying_changes: "Applying changes to group membership..."
+      applying_done: "Changes have been applied."
