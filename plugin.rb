@@ -2,7 +2,7 @@
 
 # name: discourse-dynamic-groups
 # about: Automatically populate groups
-# version: 1.1
+# version: 1.2
 # authors: richard@communiteq.com
 # url: https://github.com/communiteq/discourse-dynamic-groups
 

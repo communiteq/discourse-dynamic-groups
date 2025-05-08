@@ -165,7 +165,7 @@ module DiscourseDynamicGroups
         badge_id = group_or_badge.split(":").last.to_i
         UserBadge.where(badge_id: badge_id).pluck(:user_id)
       else
-        Group.find_by(name: group_or_badge).users.pluck(:id)
+        Group.where("name ILIKE '#{group_or_badge}'").first&.users&.pluck(:id)
       end
     end
 
