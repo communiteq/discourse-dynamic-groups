@@ -13,9 +13,23 @@ module ::DiscourseDynamicGroups
     def update
       group = Group.find_by(name: params[:group_name])
 
+      raise Discourse::NotFound unless group
+      raise Discourse::InvalidAccess if group.automatic? && group.custom_fields[:dynamic_rule].nil?
+
       begin
-        group.set_dynamic_rule(params[:dynamic_rule])
-        render json: { success: true, errors: [] }
+        rule = params[:dynamic_rule].strip
+        if rule.empty?
+          group.custom_fields.delete(:dynamic_rule)
+          group.save_custom_fields
+          group.automatic = false
+          group.save
+          render json: { success: true, errors: [] }
+        else
+          group.set_dynamic_rule(rule)
+          group.automatic = true
+          group.save
+          render json: { success: true, errors: [] }
+        end
       rescue => e
         render_json_error(e.message)
       end

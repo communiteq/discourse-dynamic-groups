@@ -7,6 +7,11 @@ import i18n from "discourse-common/helpers/i18n";
 export default class DynamicGroups extends Component {
   @service currentUser;
 
+  get otherAutoGroup()
+  {
+    return this.args.outletArgs.group.automatic && !this.args.outletArgs.group.dynamic_rule;
+  }
+
   get mustShow()
   {
     return this.currentUser?.admin;
@@ -14,11 +19,13 @@ export default class DynamicGroups extends Component {
 
   <template>
     {{#if this.mustShow}}
-      <li>
-        <LinkTo @route="group.dynamic">
-          {{dIcon "wand-magic"}} {{i18n "dynamic_groups.button_title"}}
-        </LinkTo>
-      </li>
+      {{#unless this.otherAutoGroup}}
+        <li>
+          <LinkTo @route="group.dynamic">
+            {{dIcon "wand-magic"}} {{i18n "dynamic_groups.button_title"}}
+          </LinkTo>
+        </li>
+      {{/unless}}
     {{/if}}
   </template>
 }

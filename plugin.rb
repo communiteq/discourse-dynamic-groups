@@ -2,8 +2,8 @@
 
 # name: discourse-dynamic-groups
 # about: Automatically populate groups
-# version: 1.2
-# authors: richard@communiteq.com
+# version: 1.3
+# authors: Communiteq
 # url: https://github.com/communiteq/discourse-dynamic-groups
 
 enabled_site_setting :dynamic_groups_enabled
@@ -86,12 +86,12 @@ after_initialize do
     end
   end
 
-  add_to_serializer(:group_show, :dynamic_rule, include_condition: -> { object.dynamic_rule.present? && scope.is_admin? }) do
+  add_to_serializer(:group_show, :dynamic_rule, include_condition: -> { object&.dynamic_rule.present? && scope.is_admin? }) do
     object.dynamic_rule
   end
 
   add_to_serializer(:group_show, :dynamic_progress, include_condition: -> { scope.is_admin? }) do
-    object.dynamic_progress.to_i || -1
+    object&.dynamic_progress.to_i || -1
   end
 
   DiscourseEvent.on(:user_badge_granted) do |badge_id, user_id|

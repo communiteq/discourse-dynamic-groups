@@ -36,6 +36,11 @@ export default class DynamicGroupConfiguration extends Component {
     }
   }
 
+  get otherAutoGroup()
+  {
+    return this.group.automatic && !this.group.dynamic_rule;
+  }
+
   get disabled() {
     return this.loading || this.deploying || !this.dirty;
   }
@@ -110,7 +115,7 @@ export default class DynamicGroupConfiguration extends Component {
   }
 
   <template>
-    {{#unless this.group.automatic}}
+    {{#unless this.otherAutoGroup}}
       <section class="groups-dynamic-groups">
         <div class="explanation">{{htmlSafe (i18n "dynamic_groups.explanation")}}</div>
         <textarea
