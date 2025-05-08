@@ -2,7 +2,7 @@
 
 # name: discourse-dynamic-groups
 # about: Automatically populate groups
-# version: 1.3
+# version: 1.3.1
 # authors: Communiteq
 # url: https://github.com/communiteq/discourse-dynamic-groups
 
@@ -26,6 +26,19 @@ after_initialize do
   class ::Badge
     def get_depending_group_ids
       deps = GroupCustomField.where(name: "depends_on_badge:#{self.id}").pluck(:group_id)
+    end
+  end
+
+  # we 'misuse' the automatic property of the group
+  # but the group is not in AUTO_GROUP_IDS so there is no predefined description
+
+  class ::BasicGroupSerializer
+    def bio_cooked
+      if object.automatic && Group::AUTO_GROUP_IDS[object.id]
+        return I18n.t("groups.default_descriptions.#{Group::AUTO_GROUP_IDS[object.id]}")
+      end
+
+      object.bio_cooked
     end
   end
 
