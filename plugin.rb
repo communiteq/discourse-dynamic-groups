@@ -2,7 +2,7 @@
 
 # name: discourse-dynamic-groups
 # about: Automatically populate groups
-# version: 1.3.3
+# version: 1.3.4
 # meta_topic_id: 365342
 # authors: Communiteq
 # url: https://github.com/communiteq/discourse-dynamic-groups
@@ -23,6 +23,13 @@ after_initialize do
   require_relative "lib/discourse_dynamic_groups/utils"
   require_relative "lib/discourse_dynamic_groups/cycle_detector"
   require_relative "jobs/regular/dynamic_groups/update_dynamic_group"
+
+  # remove stray custom fields to clean up after bug 3324d40
+  # remove this code after 3.5.0 is released
+  GroupCustomField.where(
+    "name LIKE ? AND group_id NOT IN (SELECT group_id FROM group_custom_fields WHERE name = ?)",
+    "depends_on_%", "dynamic_rule"
+  ).delete_all
 
   class ::Badge
     def get_depending_group_ids
