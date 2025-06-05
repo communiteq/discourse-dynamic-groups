@@ -20,6 +20,7 @@ module ::DiscourseDynamicGroups
         rule = params[:dynamic_rule].strip
         if rule.empty?
           group.custom_fields.delete(:dynamic_rule)
+          group.custom_fields.delete_if { |key, _| key.start_with?("depends_on") }
           group.save_custom_fields
           group.automatic = false
           group.save
